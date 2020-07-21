@@ -1,7 +1,10 @@
 requests>=2.24.0
-pytest>=6.0.0rc1
-selenium>=4.0.0a6.post2
+pytest~=6.0.0rc1
+selenium~=4.0.0a6.post2
 allure-pytest>=2.8.16
 pytest-rerunfailures>=9.0
 pytest-testconfig>=0.2.0
 pytest-bdd>=3.4.0
+httplib2~=0.18.1
+google-api-python-client~=1.10.0
+tabulate~=0.8.7

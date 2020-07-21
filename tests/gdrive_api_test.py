@@ -6,15 +6,16 @@ import pickle
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+import constants
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
+
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 
-def main():
-    """Shows basic usage of the Drive v3 API.
-    Prints the names and ids of the first 10 files the user has access to.
-    """
+def get_gdrive_service():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -33,20 +34,41 @@ def main():
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
+    # return Google Drive API service
+    return build('drive', 'v3', credentials=creds)
 
-    service = build('drive', 'v3', credentials=creds)
 
-    # Call the Drive v3 API
-    results = service.files().list(
-        pageSize=10, fields="nextPageToken, files(id, name)").execute()
-    items = results.get('files', [])
+def upload_files():
+    """
+    Creates a folder and upload a file to it
+    """
+    # authenticate account
+    service = get_gdrive_service()
+    # folder details we want to make
+    # folder_metadata = {
+    #     "name": "Python-version",
+    #     "mimeType": "application/vnd.google-apps.folder"
+    # }
+    # # create the folder
+    # file = service.files().create(body=folder_metadata, fields="id").execute()
+    # # get the folder id
+    # folder_id = file.get("id")
+    # print("Folder ID:", folder_id)
+    # # upload a file text file
+    # # first, define file metadata, such as the name and the parent folder ID
+    file_metadata = {
+        "name": constants.FILENAME,
+        # "parents": [folder_id]
+    }
+    # upload
+    media = MediaFileUpload(constants.FILENAME, resumable=True)
+    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    print("File created, id:", file.get("id"))
 
-    if not items:
-        print('No files found.')
-    else:
-        print('Files:')
-        for item in items:
-            print(u'{0} ({1})'.format(item['name'], item['id']))
+
+def main():
+    service = get_gdrive_service()
+    upload_files()
 
 
 if __name__ == '__main__':
